@@ -54,3 +54,11 @@ Currently all approved members see all people. Consider per-person visibility an
 
 ## D12 – Dropped for now from the original spec
 Docker, Redis/BullMQ, Auth0, Swagger, Prisma, Kubernetes, GitHub Actions, search/AI/notifications/audit modules. They return when moving to the full platform. A basic CI workflow can be added later (install, lint, build).
+
+## D13 – Legacy people import (Accepted)
+`db/migrations/003_seed_sokhulu_people.sql` imports 127 people from an earlier SQL Server script (Families / Persons / ParentOfFamilies).
+- `people.legacy_id` (unique per clan) records the old Id, so the script is idempotent and can be re-run.
+- Old "Family" = one partnership. Everyone with a ParentOfFamilies row for a family is a spouse of the others (`spouse_of`) and a parent (`parent_of`) of every person whose ChildOfFamilyId is that family. Men with several families (polygyny) simply get several spouses.
+- Mapping: Name→given_name, Surname→family_name, Clan→clan_name, Gender→gender (lowercase). Unnamed people are stored as `Unknown` (edit them in the admin UI).
+- People already added by hand are adopted (not duplicated) when name, surname and gender match exactly; three have explicit aliases (Clayton Tandabantu, Ethel Ncediswa, Thato Benedicta). Existing links are not duplicated.
+- The three "Sample …" seed people are left alone; disable them in the admin UI if not wanted.

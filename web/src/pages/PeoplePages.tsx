@@ -56,22 +56,60 @@ function PersonEditForm({ person, onDone }: { person: Person; onDone: () => void
   )
 }
 
+const PAGE_SIZE = 24
+
 export function PeoplePage() {
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'admin'
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [q, setQ] = useState('')
+  const [page, setPage] = useState(1)
   const { data, isLoading, error } = useQuery({ queryKey: ['people'], queryFn: () => api<Person[]>('people') })
+  const filtered = data?.filter((p) => fullName(p).toLowerCase().includes(q.trim().toLowerCase())) ?? []
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const current = Math.min(page, pages)
+  const shown = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE)
   return (
     <>
       <PageTitle sub="Everyone recorded in the clan archive">People</PageTitle>
+      <Input mb={4} bg="white" maxW="sm" placeholder="Search by name" value={q} onChange={(e) => { setQ(e.target.value); setPage(1) }} />
       <QueryState loading={isLoading} error={error} />
       <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} spacing={3}>
-        {data?.map((p) => (
-          <Box key={p.id} bg="white" p={4} rounded="md" shadow="sm" opacity={Number(p.removed) ? 0.6 : 1}>
-            <Link as={RouterLink} to={`/people/${p.id}`} fontWeight="semibold" color="brand.700">{fullName(p)}</Link>
-            {!!Number(p.removed) && <Badge ml={2} colorScheme="red">Disabled</Badge>}
-            {p.clan_name && <Text fontSize="sm">Clan name: {p.clan_name}</Text>}
-            <Text fontSize="xs" color="gray.600">{fmtDate(p.birth_date) || '?'} – {Number(p.is_living) ? 'living' : fmtDate(p.death_date) || '?'}</Text>
+        {shown?.map((p) => (
+          <Box
+            key={p.id}
+            bg="white"
+            p={4}
+            rounded="md"
+            shadow="sm"
+            opacity={Number(p.removed) && editingId !== Number(p.id) ? 0.6 : 1}
+            gridColumn={editingId === Number(p.id) ? '1 / -1' : undefined}
+          >
+            {editingId === Number(p.id) ? (
+              <PersonEditForm person={p} onDone={() => setEditingId(null)} />
+            ) : (
+              <>
+                <HStack justify="space-between" align="start">
+                  <Box>
+                    <Link as={RouterLink} to={`/people/${p.id}`} fontWeight="semibold" color="brand.700">{fullName(p)}</Link>
+                    {!!Number(p.removed) && <Badge ml={2} colorScheme="red">Disabled</Badge>}
+                  </Box>
+                  {isAdmin && <Button size="xs" colorScheme="orange" onClick={() => setEditingId(Number(p.id))}>Edit</Button>}
+                </HStack>
+                {p.clan_name && <Text fontSize="sm">Clan name: {p.clan_name}</Text>}
+                <Text fontSize="xs" color="gray.600">{fmtDate(p.birth_date) || '?'} – {Number(p.is_living) ? 'living' : fmtDate(p.death_date) || '?'}</Text>
+              </>
+            )}
           </Box>
         ))}
       </SimpleGrid>
+      {filtered.length > PAGE_SIZE && (
+        <HStack mt={4} justify="center" spacing={3}>
+          <Button size="sm" isDisabled={current <= 1} onClick={() => setPage(current - 1)}>Previous</Button>
+          <Text fontSize="sm">Page {current} of {pages} ({filtered.length} people)</Text>
+          <Button size="sm" isDisabled={current >= pages} onClick={() => setPage(current + 1)}>Next</Button>
+        </HStack>
+      )}
     </>
   )
 }
@@ -127,3 +165,5 @@ export function PersonPage() {
     </>
   )
 }
+
+
