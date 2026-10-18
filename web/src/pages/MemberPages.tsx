@@ -1,27 +1,8 @@
-import { Badge, Box, Heading, Text, VStack } from '@chakra-ui/react'
+import { Badge, Box, Heading, Link, Text, VStack } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
 import { Notice, PageTitle, QueryState, fmtDate } from '../components/ui'
-import { api, type ClanEvent, type Place, type Story } from '../lib/api'
-
-export function StoriesPage() {
-  const { data, isLoading, error } = useQuery({ queryKey: ['stories'], queryFn: () => api<Story[]>('stories') })
-  return (
-    <>
-      <PageTitle sub="Oral history and family memories">Stories</PageTitle>
-      <QueryState loading={isLoading} error={error} />
-      {data?.length === 0 && <Text>No stories yet.</Text>}
-      <VStack align="stretch" spacing={4}>
-        {data?.map((s) => (
-          <Box key={s.id} bg="white" p={5} rounded="lg" shadow="sm">
-            <Heading size="md">{s.title}</Heading>
-            {s.narrator && <Text fontSize="sm" color="gray.600">Told by {s.narrator}</Text>}
-            <Text mt={2} whiteSpace="pre-wrap">{s.body}</Text>
-          </Box>
-        ))}
-      </VStack>
-    </>
-  )
-}
+import { api, type ClanEvent, type Place } from '../lib/api'
+import { EvidenceBadge } from './StoryPages'
 
 export function EventsPage() {
   const { data, isLoading, error } = useQuery({ queryKey: ['events'], queryFn: () => api<ClanEvent[]>('events') })
@@ -43,6 +24,22 @@ export function EventsPage() {
   )
 }
 
+function PlaceMap({ place }: { place: Place }) {
+  const lat = Number(place.latitude)
+  const lon = Number(place.longitude)
+  if (place.latitude === null || place.longitude === null || Number.isNaN(lat) || Number.isNaN(lon)) {
+    return <Text mt={3} fontSize="sm" color="orange.700">Map location to be confirmed.</Text>
+  }
+  const d = 0.04
+  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${lon - d},${lat - d},${lon + d},${lat + d}&layer=mapnik&marker=${lat},${lon}`
+  return (
+    <Box mt={3}>
+      <Box as="iframe" title={`Map of ${place.name}`} src={src} w="full" h="280px" border="1px solid" borderColor="gray.200" rounded="md" loading="lazy" />
+      <Link href={`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=13/${lat}/${lon}`} isExternal fontSize="sm" color="brand.600">Open larger map</Link>
+    </Box>
+  )
+}
+
 export function PlacesPage() {
   const { data, isLoading, error } = useQuery({ queryKey: ['places'], queryFn: () => api<Place[]>('places') })
   return (
@@ -53,8 +50,9 @@ export function PlacesPage() {
       <VStack align="stretch" spacing={4}>
         {data?.map((p) => (
           <Box key={p.id} bg="white" p={5} rounded="lg" shadow="sm">
-            <Heading size="md">{p.name} <Badge ml={2}>{p.kind}</Badge></Heading>
+            <Heading size="md">{p.name} <Badge ml={2}>{p.kind}</Badge> <EvidenceBadge status={p.evidence_status} /></Heading>
             {p.description && <Text mt={2} whiteSpace="pre-wrap">{p.description}</Text>}
+            <PlaceMap place={p} />
           </Box>
         ))}
       </VStack>

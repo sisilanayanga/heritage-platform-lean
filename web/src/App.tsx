@@ -8,7 +8,8 @@ import { ContactPage } from './pages/ContactPage'
 import { ContentPage } from './pages/ContentPage'
 import { FamilyTreePage } from './pages/FamilyTreePage'
 import { HomePage } from './pages/HomePage'
-import { ComingSoon, EventsPage, PlacesPage, StoriesPage } from './pages/MemberPages'
+import { ComingSoon, EventsPage, PlacesPage } from './pages/MemberPages'
+import { StoriesPage, StoryPage } from './pages/StoryPages'
 import { PeoplePage, PersonPage } from './pages/PeoplePages'
 import { ADMIN_AREA_PERMS } from './lib/permissions'
 
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="people" element={member(<PeoplePage />, 'people.view')} />
         <Route path="people/:id" element={member(<PersonPage />, 'people.view')} />
         <Route path="stories" element={member(<StoriesPage />, 'stories.view')} />
+        <Route path="stories/:id" element={member(<StoryPage />, 'stories.view')} />
         <Route path="events" element={member(<EventsPage />, 'events.view')} />
         <Route path="places" element={member(<PlacesPage />, 'places.view')} />
         <Route path="gallery" element={member(<ComingSoon title="Gallery" sub="Family photographs" />, 'gallery.view')} />

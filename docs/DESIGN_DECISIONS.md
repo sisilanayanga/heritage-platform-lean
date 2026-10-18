@@ -73,3 +73,7 @@ Docker, Redis/BullMQ, Auth0, Swagger, Prisma, Kubernetes, GitHub Actions, search
 - UI: route guards (`RequireMember perm=...`), nav and admin tabs filtered by `can()`; the Admin area shows for anyone holding an admin-area permission.
 
 **Update (migration 005):** user management is strictly admin-only: listing, approving and rejecting registrations, roles, per-user permissions, make/remove admin. The users.approve permission and the Membership Officer role were removed. Run 005 after 004 and do not re-run 004 afterwards.
+
+## D15 – Story articles and evidence (Accepted)
+
+Stories are a dated article repository (migration 006): summary, category, event_date (ordering) and date_label (display, e.g. 'c. 1825'), sources (one 'Label | URL' per line) and an evidence status: verified (source found), oral (traditional), unconfirmed (to be confirmed). Non-verified articles show a warning banner. Reads are counted once per user per day in story_views so refreshing cannot inflate ranking. The top 3 by reads are shown on the home page only to users with stories.view; the API enforces this. Places gain town/village kinds and an evidence status with an OpenStreetMap embed; Ambrose and KwaNyamana have no coordinates until confirmed (none are invented). Run 006 after 005.

@@ -1,14 +1,18 @@
-import { Box, Heading, SimpleGrid, Text, Button, Stack } from '@chakra-ui/react'
+import { Badge, Box, Heading, HStack, SimpleGrid, Text, Button, Stack } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { QueryState, fmtDate } from '../components/ui'
 import { clan } from '../config/clan'
-import { api, type Announcement } from '../lib/api'
+import { api, type Announcement, type Story } from '../lib/api'
+import { EvidenceBadge } from './StoryPages'
 
 export function HomePage() {
   const { user, can } = useAuth()
   const { data, isLoading, error } = useQuery({ queryKey: ['announcements', !!user, can('announcements.view_members')], queryFn: () => api<Announcement[]>('announcements') })
+
+  const canRead = can('stories.view')
+  const highlights = useQuery({ queryKey: ['story-highlights'], queryFn: () => api<Story[]>('stories/highlights'), enabled: canRead })
 
   return (
     <Stack spacing={10}>
@@ -36,6 +40,28 @@ export function HomePage() {
           ))}
         </SimpleGrid>
       </Box>
+
+      {canRead && highlights.data && highlights.data.length > 0 && (
+        <Box>
+          <HStack justify="space-between" mb={4}>
+            <Heading size="lg" color="brand.800">Most read stories</Heading>
+            <Button as={Link} to="/stories" size="sm" variant="outline" colorScheme="orange">All stories</Button>
+          </HStack>
+          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+            {highlights.data.map((s) => (
+              <Box key={s.id} as={Link} to={`/stories/${s.id}`} bg="white" p={5} rounded="lg" shadow="sm" _hover={{ shadow: 'md' }}>
+                <HStack spacing={2} mb={1} wrap="wrap">
+                  {s.date_label && <Badge colorScheme="blue">{s.date_label}</Badge>}
+                  <EvidenceBadge status={s.evidence_status} />
+                </HStack>
+                <Heading size="sm" color="brand.700">{s.title}</Heading>
+                {s.summary && <Text mt={2} fontSize="sm">{s.summary}</Text>}
+                <Text mt={2} fontSize="xs" color="gray.500">{Number(s.view_count)} reads</Text>
+              </Box>
+            ))}
+          </SimpleGrid>
+        </Box>
+      )}
 
       <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
         {[

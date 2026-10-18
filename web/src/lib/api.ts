@@ -47,7 +47,21 @@ export interface Relationship {
   type: 'parent_of' | 'spouse_of'
 }
 export interface Announcement { id: number; title: string; body: string; published_at: string }
-export interface Story { id: number; title: string; body: string; narrator: string | null }
+export type Evidence = 'verified' | 'unconfirmed' | 'oral'
+export interface Story {
+  id: number
+  title: string
+  summary: string | null
+  category: string | null
+  event_date: string | null
+  date_label: string | null
+  evidence_status: Evidence
+  narrator: string | null
+  view_count: number | string
+  created_at: string
+  body?: string
+  sources?: string | null
+}
 export interface ClanEvent { id: number; title: string; kind: string | null; event_date: string | null; location: string | null; details: string | null }
-export interface Place { id: number; name: string; kind: string; description: string | null }
+export interface Place { id: number; name: string; kind: string; evidence_status: Evidence; description: string | null; latitude: string | null; longitude: string | null }
 export interface PendingUser { id: number; email: string; full_name: string; relationship_note: string | null; role: string; status: string; created_at: string }

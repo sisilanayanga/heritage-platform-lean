@@ -173,8 +173,12 @@ export function AdminPage() {
     {
       label: 'Stories', show: can('stories.manage'),
       el: (
-        <CreateForm endpoint="admin/stories" label="Add story" invalidate={['stories']} fields={[
-          { key: 'title', label: 'Title', required: true }, { key: 'narrator', label: 'Narrator' }, { key: 'body', label: 'Story', type: 'textarea', required: true },
+        <CreateForm endpoint="admin/stories" label="Add story" invalidate={['stories', 'story-highlights']} fields={[
+          { key: 'title', label: 'Title', required: true }, { key: 'summary', label: 'Summary (shown in lists)' }, { key: 'category', label: 'Category (e.g. Mount Frere history)' },
+          { key: 'event_date', label: 'Date of the event (for ordering)', type: 'date' }, { key: 'date_label', label: 'Date as shown (e.g. c. 1825)' },
+          { key: 'evidence_status', label: 'Evidence', type: 'select', options: ['verified', 'unconfirmed', 'oral'] },
+          { key: 'narrator', label: 'Told by / author' }, { key: 'body', label: 'Article', type: 'textarea', required: true },
+          { key: 'sources', label: 'Sources (one per line: Label | https://link)', type: 'textarea' },
         ]} />
       ),
     },
@@ -191,7 +195,8 @@ export function AdminPage() {
       label: 'Places', show: can('places.manage'),
       el: (
         <CreateForm endpoint="admin/places" label="Add place" invalidate={['places']} fields={[
-          { key: 'name', label: 'Name', required: true }, { key: 'kind', label: 'Kind', type: 'select', options: ['homestead', 'grave', 'origin', 'other'] },
+          { key: 'name', label: 'Name', required: true }, { key: 'kind', label: 'Kind', type: 'select', options: ['homestead', 'grave', 'origin', 'town', 'village', 'other'] },
+          { key: 'evidence_status', label: 'Evidence', type: 'select', options: ['verified', 'unconfirmed', 'oral'] },
           { key: 'description', label: 'Description', type: 'textarea' }, { key: 'latitude', label: 'Latitude' }, { key: 'longitude', label: 'Longitude' },
         ]} />
       ),

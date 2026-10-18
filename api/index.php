@@ -34,17 +34,17 @@ if ($method !== 'GET') {
 
 // Whitelisted editable content tables for admin CRUD: table => [field => type]
 $content = [
-    'stories' => ['title' => 's', 'body' => 't', 'narrator' => 's'],
+    'stories' => ['title' => 's', 'summary' => 's', 'category' => 's', 'event_date' => 'd', 'date_label' => 's', 'evidence_status' => 'e', 'narrator' => 's', 'body' => 't', 'sources' => 't'],
     'events' => ['title' => 's', 'kind' => 's', 'event_date' => 'd', 'location' => 's', 'details' => 't'],
-    'places' => ['name' => 's', 'kind' => 's', 'description' => 't', 'latitude' => 'n', 'longitude' => 'n'],
+    'places' => ['name' => 's', 'kind' => 's', 'evidence_status' => 'e', 'description' => 't', 'latitude' => 'n', 'longitude' => 'n'],
     'announcements' => ['title' => 's', 'body' => 't', 'is_public' => 'b'],
     'people' => ['given_name' => 's', 'family_name' => 's', 'clan_name' => 's', 'gender' => 's', 'birth_date' => 'd', 'death_date' => 'd', 'is_living' => 'b', 'birth_place' => 's', 'bio' => 't'],
 ];
 $requiredField = ['stories' => 'title', 'events' => 'title', 'places' => 'name', 'announcements' => 'title', 'people' => 'given_name'];
 $memberLists = [
-    'stories' => 'SELECT id, title, body, narrator, created_at FROM stories WHERE clan_id = ? ORDER BY created_at DESC',
+    'stories' => 'SELECT id, title, summary, category, event_date, date_label, evidence_status, narrator, view_count, created_at FROM stories WHERE clan_id = ? ORDER BY COALESCE(event_date, DATE(created_at)) DESC, id DESC',
     'events' => 'SELECT id, title, kind, event_date, location, details FROM events WHERE clan_id = ? ORDER BY event_date DESC',
-    'places' => 'SELECT id, name, kind, description, latitude, longitude FROM places WHERE clan_id = ? ORDER BY name',
+    'places' => 'SELECT id, name, kind, evidence_status, description, latitude, longitude FROM places WHERE clan_id = ? ORDER BY name',
 ];
 $listPerm = ['stories' => 'stories.view', 'events' => 'events.view', 'places' => 'places.view'];
 $writePerm = [
@@ -76,6 +76,7 @@ function collect_fields(array $spec, array $data): array
                 $out[$f] = isset($data[$f]) && is_numeric($data[$f]) ? (float) $data[$f] : null;
                 break;
             case 't': $out[$f] = str_field($data, $f, 20000); break;
+            case 'e': $out[$f] = in_array($data[$f] ?? '', ['verified', 'unconfirmed', 'oral'], true) ? $data[$f] : 'unconfirmed'; break;
             default: $out[$f] = str_field($data, $f, 190);
         }
     }
@@ -183,6 +184,31 @@ switch (true) {
         $st = db()->prepare('SELECT id, given_name, family_name, clan_name, gender, birth_date, death_date, is_living, removed FROM people WHERE clan_id = ?' . (can('people.disable') ? '' : ' AND removed = 0') . ' ORDER BY removed, family_name, given_name');
         $st->execute([$cid]);
         respond(array_map(fn ($row) => limit_person($row, $details), $st->fetchAll()));
+
+    case $route === 'stories' && ($parts[1] ?? '') === 'highlights' && $method === 'GET':
+        require_perm('stories.view');
+        // Most-read first; until anything has been read, fall back to the newest articles.
+        $st = db()->prepare('SELECT id, title, summary, category, date_label, evidence_status, view_count FROM stories WHERE clan_id = ? ORDER BY view_count DESC, COALESCE(event_date, DATE(created_at)) DESC, id DESC LIMIT 3');
+        $st->execute([$cid]);
+        respond($st->fetchAll());
+
+    case $route === 'stories' && isset($parts[1]) && $method === 'GET':
+        require_perm('stories.view');
+        $st = db()->prepare('SELECT id, title, summary, category, event_date, date_label, evidence_status, narrator, body, sources, view_count, created_at FROM stories WHERE clan_id = ? AND id = ?');
+        $st->execute([$cid, (int) $parts[1]]);
+        $row = $st->fetch();
+        if (!$row) {
+            fail(404, 'Not found');
+        }
+        $u = current_user();
+        // One counted read per person per day so the ranking cannot be inflated by refreshing.
+        $ins = db()->prepare('INSERT IGNORE INTO story_views (story_id, user_id, view_date) VALUES (?, ?, CURDATE())');
+        $ins->execute([(int) $row['id'], (int) $u['id']]);
+        if ($ins->rowCount() > 0) {
+            db()->prepare('UPDATE stories SET view_count = view_count + 1 WHERE id = ?')->execute([(int) $row['id']]);
+            $row['view_count'] = (int) $row['view_count'] + 1;
+        }
+        respond($row);
 
     case isset($memberLists[$route]) && $method === 'GET':
         require_perm($listPerm[$route]);
