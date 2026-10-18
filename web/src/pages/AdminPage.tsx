@@ -127,7 +127,7 @@ function PageEditor() {
     <Stack spacing={3} bg="white" p={5} rounded="lg" shadow="sm" maxW="3xl">
       <Select value={slug} onChange={(e) => { setSlug(e.target.value); setDraft(null) }} w="auto">
         <option value="history">History</option>
-        <option value="izithakazelo">Izithakazelo</option>
+        <option value="iziduko">Iziduko</option>
         <option value="culture">Culture</option>
       </Select>
       {m.error && <Alert status="error"><AlertIcon />{m.error.message}</Alert>}
@@ -157,7 +157,7 @@ export function AdminPage() {
           <TabPanel px={0}>
             <Stack spacing={6}>
               <CreateForm endpoint="admin/people" label="Add person" invalidate={['people', 'tree']} fields={[
-                { key: 'given_name', label: 'Given name', required: true }, { key: 'family_name', label: 'Family name' }, { key: 'clan_name', label: 'Clan name (isithakazelo)' },
+                { key: 'given_name', label: 'Given name', required: true }, { key: 'family_name', label: 'Family name' }, { key: 'clan_name', label: 'Clan name (isiduko)' },
                 { key: 'gender', label: 'Gender', type: 'select', options: ['male', 'female', 'other'] },
                 { key: 'birth_date', label: 'Birth date', type: 'date' }, { key: 'death_date', label: 'Death date', type: 'date' },
                 { key: 'is_living', label: 'Is living', type: 'checkbox' }, { key: 'birth_place', label: 'Birth place' }, { key: 'bio', label: 'Biography', type: 'textarea' },

@@ -36,7 +36,7 @@ function PersonEditForm({ person, onDone }: { person: Person; onDone: () => void
       {m.error && <Alert status="error"><AlertIcon />{m.error.message}</Alert>}
       <FormControl isRequired><FormLabel>Given name</FormLabel><Input value={v.given_name} onChange={set('given_name')} /></FormControl>
       <FormControl><FormLabel>Family name</FormLabel><Input value={v.family_name} onChange={set('family_name')} /></FormControl>
-      <FormControl><FormLabel>Clan name (isithakazelo)</FormLabel><Input value={v.clan_name} onChange={set('clan_name')} /></FormControl>
+      <FormControl><FormLabel>Clan name (isiduko)</FormLabel><Input value={v.clan_name} onChange={set('clan_name')} /></FormControl>
       <FormControl>
         <FormLabel>Gender</FormLabel>
         <Select placeholder="Select" value={v.gender} onChange={set('gender')}>

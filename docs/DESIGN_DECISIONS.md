@@ -20,7 +20,7 @@ First admin is promoted manually via SQL (see README).
 Future: swap to OIDC (Auth0/Keycloak) when the platform moves to real hosting; the `users.status` approval concept remains.
 
 ## D5 – Access model (Accepted)
-- **Guest**: Home, History, Izithakazelo, Culture, Contact, public announcements.
+- **Guest**: Home, History, Iziduko, Culture, Contact, public announcements.
 - **Approved member**: Family Tree, People, Stories, Events, Places, Gallery, Documents, non-public announcements.
 - **Admin**: everything plus approvals and content management.
 Rule: anything about identity or actual people requires an approved account; this is enforced in the API (`require_member`), not just hidden in the UI.
@@ -32,7 +32,7 @@ Single clan now. Every business table has `clan_id` (the tenant key from the ori
 `people` + `relationships` (`parent_of`, `spouse_of`). The tree is derived on the client: roots are people with no recorded parent; children appear under parents; spouses next to partners. This supports polygynous marriages (common in our history) and avoids fixed "father/mother" columns. Rendered as a nested, mobile-friendly list (no heavy graph library). Unconnected people simply appear as additional roots.
 
 ## D8 – Editable text content in the database (Accepted)
-History, Izithakazelo and Culture are rows in `content_pages`, editable from the Admin page, so non-developers can maintain them without redeploying.
+History, Iziduko and Culture are rows in `content_pages`, editable from the Admin page, so non-developers can maintain them without redeploying.
 
 ## D9 – No file uploads in v1 (Accepted)
 Gallery and Documents pages are placeholders. Safe uploads (type validation, private storage, authenticated download) deserve their own design. Planned: a `StorageProvider` interface (local disk on cPanel now; S3/Azure Blob/MinIO later, as in the original spec) with files stored outside `public_html` and served via an authenticated PHP endpoint.
@@ -41,7 +41,7 @@ Gallery and Documents pages are placeholders. Safe uploads (type validation, pri
 Currently all approved members see all people. Consider per-person visibility and hiding living people's details from non-relatives.
 
 ## D11 – Suggested additional pages for South African Black heritage (Open backlog)
-- **Izithakazelo** (done, public page) – clan praises and meanings.
+- **Iziduko** (done, public page) – clan praises and meanings.
 - **Ancestral homesteads & graves** (done as Places) – kraal/umuzi locations and grave register with GPS, valuable given forced removals and migration.
 - **Ceremonies & rites** – umembeso, lobola/ilobolo process, imbeleko, umhlanga, ukubuyisa idlozi; (partly under Culture/Events).
 - **Name meanings & naming traditions** – origin of given names.

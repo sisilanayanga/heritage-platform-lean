@@ -140,7 +140,7 @@ INSERT INTO relationships (clan_id, person_id, related_person_id, type) VALUES
 
 INSERT INTO content_pages (clan_id, slug, title, body) VALUES
  (1, 'history', 'Our History', 'Write the Sokhulu origin story and lineage here.'),
- (1, 'izithakazelo', 'Izithakazelo (Clan Praises)', 'Add the clan praise names and their meanings here.'),
+ (1, 'iziduko', 'Iziduko (Clan Praises)', 'Add the clan praise names and their meanings here.'),
  (1, 'culture', 'Culture & Customs', 'Document ceremonies such as umembeso, imbeleko and ukubuyisa here.');
 
 -- Create the first admin: register on the site, then run in phpMyAdmin:

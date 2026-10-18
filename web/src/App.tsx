@@ -19,7 +19,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<HomePage />} />
         <Route path="history" element={<ContentPage slug="history" title="Our History" sub="Origins and lineage of the clan" />} />
-        <Route path="izithakazelo" element={<ContentPage slug="izithakazelo" title="Izithakazelo" sub="Clan praise names" />} />
+        <Route path="iziduko" element={<ContentPage slug="iziduko" title="Iziduko" sub="Clan praise names" />} />
         <Route path="culture" element={<ContentPage slug="culture" title="Culture & Customs" sub="Ceremonies and traditions" />} />
         <Route path="contact" element={<ContactPage />} />
         <Route path="login" element={<LoginPage />} />

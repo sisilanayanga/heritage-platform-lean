@@ -32,5 +32,5 @@ cd web && npm install && npm run dev            # site on http://localhost:5173 
 
 ## Customising
 - Clan name/branding: `web/src/config/clan.ts`, `api/config.php` (`clan_slug`).
-- History / Izithakazelo / Culture text: edit from the Admin page.
+- History / Iziduko / Culture text: edit from the Admin page.
 - Replace the sample people in `db/schema.sql` (or delete them) with real data.

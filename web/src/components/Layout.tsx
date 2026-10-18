@@ -6,7 +6,7 @@ import { clan } from '../config/clan'
 const publicLinks = [
   ['/', 'Home'],
   ['/history', 'History'],
-  ['/izithakazelo', 'Izithakazelo'],
+  ['/iziduko', 'Iziduko'],
   ['/culture', 'Culture'],
   ['/contact', 'Contact'],
 ] as const

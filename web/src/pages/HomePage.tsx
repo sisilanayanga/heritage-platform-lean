@@ -40,7 +40,7 @@ export function HomePage() {
       <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
         {[
           ['Lineage', 'Trace the Sokhulu line from our earliest known ancestors.', '/history'],
-          ['Izithakazelo', 'The praise names that carry our identity.', '/izithakazelo'],
+          ['Iziduko', 'The praise names that carry our identity.', '/iziduko'],
           ['Culture', 'Ceremonies and customs we keep alive.', '/culture'],
         ].map(([t, d, to]) => (
           <Box key={to} as={Link} to={to} bg="white" p={5} rounded="lg" shadow="sm" _hover={{ shadow: 'md' }}>
