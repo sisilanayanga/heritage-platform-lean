@@ -145,3 +145,6 @@ INSERT INTO content_pages (clan_id, slug, title, body) VALUES
 
 -- Create the first admin: register on the site, then run in phpMyAdmin:
 --   UPDATE users SET role='admin', status='approved' WHERE email='you@example.com';
+
+-- RBAC (roles/permissions) lives in db/migrations/004_rbac.sql. For a fresh install run this file, then 001..004 in order.
+

@@ -92,9 +92,11 @@ function Card({ p, focused = false, defaultOpen }: { p: Person; focused?: boolea
       </HStack>
       {open && (
         <Box pl={6}>
-          <Text fontSize="xs" color="gray.600">
-            {fmtDate(p.birth_date) || '?'} – {Number(p.is_living) ? 'living' : fmtDate(p.death_date) || '?'}
-          </Text>
+          {!p.restricted && (
+            <Text fontSize="xs" color="gray.600">
+              {fmtDate(p.birth_date) || '?'} – {Number(p.is_living) ? 'living' : fmtDate(p.death_date) || '?'}
+            </Text>
+          )}
           {!focused && (
             <Link as={RouterLink} to={`/family-tree?focus=${p.id}`} fontSize="xs" color="gray.600" textDecoration="underline">
               Focus

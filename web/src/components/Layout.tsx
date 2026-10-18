@@ -2,6 +2,7 @@ import { Box, Button, Container, Flex, HStack, IconButton, Link, Stack, Text, us
 import { Link as RouterLink, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { clan } from '../config/clan'
+import { ADMIN_AREA_PERMS } from '../lib/permissions'
 
 const publicLinks = [
   ['/', 'Home'],
@@ -12,21 +13,25 @@ const publicLinks = [
 ] as const
 
 const memberLinks = [
-  ['/family-tree', 'Family Tree'],
-  ['/people', 'People'],
-  ['/stories', 'Stories'],
-  ['/events', 'Events'],
-  ['/places', 'Places'],
-  ['/gallery', 'Gallery'],
-  ['/documents', 'Documents'],
+  ['/family-tree', 'Family Tree', 'tree.view'],
+  ['/people', 'People', 'people.view'],
+  ['/stories', 'Stories', 'stories.view'],
+  ['/events', 'Events', 'events.view'],
+  ['/places', 'Places', 'places.view'],
+  ['/gallery', 'Gallery', 'gallery.view'],
+  ['/documents', 'Documents', 'documents.view'],
 ] as const
 
 export function Layout() {
-  const { user, logout } = useAuth()
+  const { user, logout, can, canAny } = useAuth()
   const navigate = useNavigate()
   const { isOpen, onToggle, onClose } = useDisclosure()
 
-  const links = [...publicLinks, ...(user ? memberLinks : []), ...(user?.role === 'admin' ? ([['/admin', 'Admin']] as const) : [])]
+  const links: (readonly [string, string])[] = [
+    ...publicLinks,
+    ...memberLinks.filter(([, , perm]) => can(perm)).map(([to, label]) => [to, label] as const),
+    ...(canAny(...ADMIN_AREA_PERMS) ? ([['/admin', 'Admin']] as const) : []),
+  ]
 
   return (
     <Flex direction="column" minH="100vh">

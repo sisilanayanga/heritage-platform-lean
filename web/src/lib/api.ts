@@ -31,11 +31,12 @@ export interface Person {
   id: number
   given_name: string
   family_name: string | null
-  clan_name: string | null
+  clan_name?: string | null
   gender?: string | null
-  birth_date: string | null
-  death_date: string | null
-  is_living: number | string
+  birth_date?: string | null
+  death_date?: string | null
+  is_living?: number | string
+  restricted?: boolean
   birth_place?: string | null
   bio?: string | null
   removed?: number | string

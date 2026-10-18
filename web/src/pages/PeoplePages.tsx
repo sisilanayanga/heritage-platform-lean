@@ -59,8 +59,8 @@ function PersonEditForm({ person, onDone }: { person: Person; onDone: () => void
 const PAGE_SIZE = 24
 
 export function PeoplePage() {
-  const { user } = useAuth()
-  const isAdmin = user?.role === 'admin'
+  const { can } = useAuth()
+  const isAdmin = can('people.edit')
   const [editingId, setEditingId] = useState<number | null>(null)
   const [q, setQ] = useState('')
   const [page, setPage] = useState(1)
@@ -97,7 +97,7 @@ export function PeoplePage() {
                   {isAdmin && <Button size="xs" colorScheme="orange" onClick={() => setEditingId(Number(p.id))}>Edit</Button>}
                 </HStack>
                 {p.clan_name && <Text fontSize="sm">Clan name: {p.clan_name}</Text>}
-                <Text fontSize="xs" color="gray.600">{fmtDate(p.birth_date) || '?'} – {Number(p.is_living) ? 'living' : fmtDate(p.death_date) || '?'}</Text>
+                {!p.restricted && <Text fontSize="xs" color="gray.600">{fmtDate(p.birth_date) || '?'} – {Number(p.is_living) ? 'living' : fmtDate(p.death_date) || '?'}</Text>}
               </>
             )}
           </Box>
@@ -116,7 +116,7 @@ export function PeoplePage() {
 
 export function PersonPage() {
   const { id } = useParams()
-  const { user } = useAuth()
+  const { can } = useAuth()
   const [editing, setEditing] = useState(false)
   const qc = useQueryClient()
   const { data, isLoading, error } = useQuery({ queryKey: ['person', id], queryFn: () => api<Person>(`people/${id}`) })
@@ -144,19 +144,25 @@ export function PersonPage() {
             <>
               <HStack justify="space-between" align="start">
                 <Heading color="brand.800">{fullName(data)} {isRemoved && <Badge colorScheme="red">Disabled</Badge>}</Heading>
-                {user?.role === 'admin' && (
-                  <HStack>
-                    <Button size="sm" colorScheme="orange" onClick={() => setEditing(true)}>Edit</Button>
+                <HStack>
+                  {can('people.edit') && <Button size="sm" colorScheme="orange" onClick={() => setEditing(true)}>Edit</Button>}
+                  {can('people.disable') && (
                     <Button size="sm" variant="outline" colorScheme={isRemoved ? 'green' : 'red'} isLoading={toggle.isPending} onClick={confirmToggle}>
                       {isRemoved ? 'Restore' : 'Disable'}
                     </Button>
-                  </HStack>
-                )}
+                  )}
+                </HStack>
               </HStack>
               {data.clan_name && <Text>Clan name: {data.clan_name}</Text>}
-              <Text>Born: {fmtDate(data.birth_date) || 'unknown'}{data.birth_place ? `, ${data.birth_place}` : ''}</Text>
-              {!Number(data.is_living) && <Text>Died: {fmtDate(data.death_date) || 'unknown'}</Text>}
-              {data.bio && <Text mt={4} whiteSpace="pre-wrap">{data.bio}</Text>}
+              {data.restricted ? (
+                <Text color="gray.600" mt={2}>More details about this person are available to members with extra access.</Text>
+              ) : (
+                <>
+                  <Text>Born: {fmtDate(data.birth_date) || 'unknown'}{data.birth_place ? `, ${data.birth_place}` : ''}</Text>
+                  {!Number(data.is_living) && <Text>Died: {fmtDate(data.death_date) || 'unknown'}</Text>}
+                  {data.bio && <Text mt={4} whiteSpace="pre-wrap">{data.bio}</Text>}
+                </>
+              )}
             </>
           )}
           <Link as={RouterLink} to="/family-tree" color="brand.600" display="block" mt={4}>← Back to the family tree</Link>

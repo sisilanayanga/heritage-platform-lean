@@ -13,9 +13,11 @@ docs/  design decisions
 1. **Database**: cPanel > MySQL Databases: create a database + user (all privileges). In phpMyAdmin import `db/schema.sql`.
 2. **API**: upload the `api/` folder to `public_html/api/`. Copy `config.example.php` to `config.php` and fill in DB credentials, `site_url`, and the mail addresses (create a mailbox such as `no-reply@yourdomain` in cPanel > Email Accounts).
 3. **Web**: `cd web && npm install && npm run build`, then upload the *contents* of `web/dist/` (including `.htaccess`) to `public_html/`.
-4. **First admin**: register on the site, then in phpMyAdmin run  
-   `UPDATE users SET role='admin', status='approved' WHERE email='you@example.com';`
-5. Use HTTPS (cPanel AutoSSL) – session cookies are marked Secure on HTTPS.
+4. **Migrations**: in phpMyAdmin run `db/migrations/001` to `004` in order (soft-disable, iziduko rename, people seed, roles and permissions).
+5. **First admin**: register on the site, then in phpMyAdmin run  
+   `UPDATE users SET role='admin', status='approved' WHERE email='you@example.com';`  
+   (run migration 004 after this so the admin is linked to the Administrator role).
+6. Use HTTPS (cPanel AutoSSL) – session cookies are marked Secure on HTTPS.
 
 The site and API must be on the same domain (`/api`).
 

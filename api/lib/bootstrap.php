@@ -159,6 +159,68 @@ function require_admin(): array
     return $u;
 }
 
+/** A manage/edit permission implies the view permissions it needs to be usable. */
+const PERMISSION_IMPLIES = [
+    'stories.manage' => ['stories.view'],
+    'events.manage' => ['events.view'],
+    'places.manage' => ['places.view'],
+    'announcements.manage' => ['announcements.view_members'],
+    'people.view_details' => ['people.view'],
+    'people.edit' => ['people.view_details', 'people.view', 'tree.view'],
+    'people.create' => ['people.view', 'tree.view'],
+    'people.disable' => ['people.view', 'tree.view'],
+    'relationships.manage' => ['people.view', 'tree.view'],
+];
+
+/** Effective permission codes for a user: admin = everything, otherwise roles + direct grants. */
+function user_permissions(array $u): array
+{
+    static $cache = [];
+    $uid = (int) $u['id'];
+    if (isset($cache[$uid])) {
+        return $cache[$uid];
+    }
+    if ($u['role'] === 'admin') {
+        return $cache[$uid] = db()->query('SELECT code FROM permissions')->fetchAll(PDO::FETCH_COLUMN);
+    }
+    $st = db()->prepare(
+        'SELECT rp.permission_code FROM user_roles ur
+           JOIN role_permissions rp ON rp.role_id = ur.role_id WHERE ur.user_id = ?
+         UNION SELECT permission_code FROM user_permissions WHERE user_id = ?'
+    );
+    $st->execute([$uid, $uid]);
+    $perms = $st->fetchAll(PDO::FETCH_COLUMN);
+    foreach ($perms as $p) {
+        foreach (PERMISSION_IMPLIES[$p] ?? [] as $implied) {
+            $perms[] = $implied;
+        }
+    }
+    return $cache[$uid] = array_values(array_unique($perms));
+}
+
+function can(string $permission): bool
+{
+    $u = current_user();
+    return $u !== null && in_array($permission, user_permissions($u), true);
+}
+
+function require_perm(string $permission): array
+{
+    $u = require_member();
+    if (!in_array($permission, user_permissions($u), true)) {
+        fail(403, 'You do not have permission to do that');
+    }
+    return $u;
+}
+
+/** Gives a user the clan's default role (no-op if they already hold it). */
+function assign_default_role(int $userId, int $clanId): void
+{
+    db()->prepare(
+        'INSERT IGNORE INTO user_roles (user_id, role_id) SELECT ?, id FROM roles WHERE clan_id = ? AND is_default = 1'
+    )->execute([$userId, $clanId]);
+}
+
 function check_csrf(): void
 {
     $u = current_user();

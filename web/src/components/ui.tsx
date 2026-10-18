@@ -20,5 +20,5 @@ export function Notice({ children }: { children: ReactNode }) {
   return <Alert status="info" rounded="md"><AlertIcon />{children}</Alert>
 }
 
-export const fmtDate = (d: string | null) => (d ? d.slice(0, 10) : '')
+export const fmtDate = (d?: string | null) => (d ? d.slice(0, 10) : '')
 export const fullName = (p: { given_name: string; family_name: string | null }) => [p.given_name, p.family_name].filter(Boolean).join(' ')

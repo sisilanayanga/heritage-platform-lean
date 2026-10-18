@@ -7,8 +7,8 @@ import { clan } from '../config/clan'
 import { api, type Announcement } from '../lib/api'
 
 export function HomePage() {
-  const { user } = useAuth()
-  const { data, isLoading, error } = useQuery({ queryKey: ['announcements', !!user], queryFn: () => api<Announcement[]>('announcements') })
+  const { user, can } = useAuth()
+  const { data, isLoading, error } = useQuery({ queryKey: ['announcements', !!user, can('announcements.view_members')], queryFn: () => api<Announcement[]>('announcements') })
 
   return (
     <Stack spacing={10}>

@@ -10,8 +10,9 @@ import { FamilyTreePage } from './pages/FamilyTreePage'
 import { HomePage } from './pages/HomePage'
 import { ComingSoon, EventsPage, PlacesPage, StoriesPage } from './pages/MemberPages'
 import { PeoplePage, PersonPage } from './pages/PeoplePages'
+import { ADMIN_AREA_PERMS } from './lib/permissions'
 
-const member = (el: ReactNode) => <RequireMember>{el}</RequireMember>
+const member = (el: ReactNode, perm?: string) => <RequireMember perm={perm}>{el}</RequireMember>
 
 export default function App() {
   return (
@@ -25,15 +26,15 @@ export default function App() {
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
 
-        <Route path="family-tree" element={member(<FamilyTreePage />)} />
-        <Route path="people" element={member(<PeoplePage />)} />
-        <Route path="people/:id" element={member(<PersonPage />)} />
-        <Route path="stories" element={member(<StoriesPage />)} />
-        <Route path="events" element={member(<EventsPage />)} />
-        <Route path="places" element={member(<PlacesPage />)} />
-        <Route path="gallery" element={member(<ComingSoon title="Gallery" sub="Family photographs" />)} />
-        <Route path="documents" element={member(<ComingSoon title="Documents" sub="Certificates, letters and records" />)} />
-        <Route path="admin" element={<RequireMember admin><AdminPage /></RequireMember>} />
+        <Route path="family-tree" element={member(<FamilyTreePage />, 'tree.view')} />
+        <Route path="people" element={member(<PeoplePage />, 'people.view')} />
+        <Route path="people/:id" element={member(<PersonPage />, 'people.view')} />
+        <Route path="stories" element={member(<StoriesPage />, 'stories.view')} />
+        <Route path="events" element={member(<EventsPage />, 'events.view')} />
+        <Route path="places" element={member(<PlacesPage />, 'places.view')} />
+        <Route path="gallery" element={member(<ComingSoon title="Gallery" sub="Family photographs" />, 'gallery.view')} />
+        <Route path="documents" element={member(<ComingSoon title="Documents" sub="Certificates, letters and records" />, 'documents.view')} />
+        <Route path="admin" element={<RequireMember anyOf={ADMIN_AREA_PERMS}><AdminPage /></RequireMember>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

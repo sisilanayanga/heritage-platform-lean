@@ -62,3 +62,14 @@ Docker, Redis/BullMQ, Auth0, Swagger, Prisma, Kubernetes, GitHub Actions, search
 - Mapping: Name→given_name, Surname→family_name, Clan→clan_name, Gender→gender (lowercase). Unnamed people are stored as `Unknown` (edit them in the admin UI).
 - People already added by hand are adopted (not duplicated) when name, surname and gender match exactly; three have explicit aliases (Clayton Tandabantu, Ethel Ncediswa, Thato Benedicta). Existing links are not duplicated.
 - The three "Sample …" seed people are left alone; disable them in the admin UI if not wanted.
+
+## D14 – Roles and permissions (RBAC) (Accepted)
+`db/migrations/004_rbac.sql`. Access is granted through **permissions**, collected into **roles**; a person can have several roles plus extra direct permissions. Effective permissions = role permissions + direct permissions + implied ones (e.g. `people.edit` implies `people.view_details`).
+- **Administrator** (`users.role='admin'`) implicitly has *every* permission, including ones added later. Making someone admin links the Administrator role; removing admin deletes all their roles and direct permissions and puts them back on the default **Member** role.
+- RBAC management and make/remove admin are admin-only (no `rbac.manage` permission, to prevent privilege escalation). Admins cannot remove their own admin access.
+- Guests see public pages and public announcements only. Approved users get the default Member role: tree, people names, stories, events, places and member announcements. Without `people.view_details` the API returns only name and gender for people (`restricted: true`) - the stripping is server-side, the UI only reflects it.
+- Permissions: tree.view, people.view, people.view_details, people.create, people.edit, people.disable, relationships.manage, stories.view/manage, events.view/manage, places.view/manage, announcements.view_members/manage, gallery.view, documents.view, content.edit, users.approve.
+- Built-in roles: Administrator, Member, Family Member (adds details, gallery, documents), Communications Officer (events + announcements), Content Editor (stories, places, pages), Family Historian (people create/edit, details, relationships), Membership Officer (approve registrations). Built-in role names and the Administrator role are fixed; custom roles can be created, edited and deleted in Admin > Access.
+- UI: route guards (`RequireMember perm=...`), nav and admin tabs filtered by `can()`; the Admin area shows for anyone holding an admin-area permission.
+
+**Update (migration 005):** user management is strictly admin-only: listing, approving and rejecting registrations, roles, per-user permissions, make/remove admin. The users.approve permission and the Membership Officer role were removed. Run 005 after 004 and do not re-run 004 afterwards.

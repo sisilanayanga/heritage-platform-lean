@@ -2,7 +2,9 @@ import {
   Alert, AlertIcon, Badge, Box, Button, Checkbox, FormControl, FormLabel, HStack, Input, Select, Stack, Tab, TabList, TabPanel, TabPanels, Table, Tbody, Td, Text, Textarea, Th, Thead, Tr, Tabs,
 } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
+import { useAuth } from '../auth/AuthContext'
+import { AccessPanel } from './AccessPanel'
 import { PageTitle, QueryState, fullName } from '../components/ui'
 import { api, type PendingUser, type Person } from '../lib/api'
 
@@ -140,50 +142,70 @@ function PageEditor() {
 }
 
 export function AdminPage() {
+  const { user, can, canAny } = useAuth()
+  const isAdmin = user?.role === 'admin'
+  const tabs: { label: string; show: boolean; el: ReactNode }[] = [
+    { label: 'Registrations', show: isAdmin, el: <Registrations /> },
+    {
+      label: 'Announcements', show: can('announcements.manage'),
+      el: (
+        <CreateForm endpoint="admin/announcements" label="Publish" invalidate={['announcements']} fields={[
+          { key: 'title', label: 'Title', required: true }, { key: 'body', label: 'Message', type: 'textarea', required: true }, { key: 'is_public', label: 'Visible to guests', type: 'checkbox' },
+        ]} />
+      ),
+    },
+    {
+      label: 'People', show: canAny('people.create', 'relationships.manage'),
+      el: (
+        <Stack spacing={6}>
+          {can('people.create') && (
+            <CreateForm endpoint="admin/people" label="Add person" invalidate={['people', 'tree']} fields={[
+              { key: 'given_name', label: 'Given name', required: true }, { key: 'family_name', label: 'Family name' }, { key: 'clan_name', label: 'Clan name (isiduko)' },
+              { key: 'gender', label: 'Gender', type: 'select', options: ['male', 'female', 'other'] },
+              { key: 'birth_date', label: 'Birth date', type: 'date' }, { key: 'death_date', label: 'Death date', type: 'date' },
+              { key: 'is_living', label: 'Is living', type: 'checkbox' }, { key: 'birth_place', label: 'Birth place' }, { key: 'bio', label: 'Biography', type: 'textarea' },
+            ]} />
+          )}
+          {can('relationships.manage') && <RelationshipForm />}
+        </Stack>
+      ),
+    },
+    {
+      label: 'Stories', show: can('stories.manage'),
+      el: (
+        <CreateForm endpoint="admin/stories" label="Add story" invalidate={['stories']} fields={[
+          { key: 'title', label: 'Title', required: true }, { key: 'narrator', label: 'Narrator' }, { key: 'body', label: 'Story', type: 'textarea', required: true },
+        ]} />
+      ),
+    },
+    {
+      label: 'Events', show: can('events.manage'),
+      el: (
+        <CreateForm endpoint="admin/events" label="Add event" invalidate={['events']} fields={[
+          { key: 'title', label: 'Title', required: true }, { key: 'kind', label: 'Kind (e.g. umembeso, imbeleko, reunion)' }, { key: 'event_date', label: 'Date', type: 'date' },
+          { key: 'location', label: 'Location' }, { key: 'details', label: 'Details', type: 'textarea' },
+        ]} />
+      ),
+    },
+    {
+      label: 'Places', show: can('places.manage'),
+      el: (
+        <CreateForm endpoint="admin/places" label="Add place" invalidate={['places']} fields={[
+          { key: 'name', label: 'Name', required: true }, { key: 'kind', label: 'Kind', type: 'select', options: ['homestead', 'grave', 'origin', 'other'] },
+          { key: 'description', label: 'Description', type: 'textarea' }, { key: 'latitude', label: 'Latitude' }, { key: 'longitude', label: 'Longitude' },
+        ]} />
+      ),
+    },
+    { label: 'Pages', show: can('content.edit'), el: <PageEditor /> },
+    { label: 'Access', show: isAdmin, el: <AccessPanel /> },
+  ]
+  const visible = tabs.filter((t) => t.show)
   return (
     <>
-      <PageTitle sub="Approve members and manage clan content">Admin</PageTitle>
+      <PageTitle sub="Manage clan content and who can access what">Admin</PageTitle>
       <Tabs colorScheme="orange" isLazy>
-        <TabList overflowX="auto">
-          <Tab>Registrations</Tab><Tab>Announcements</Tab><Tab>People</Tab><Tab>Stories</Tab><Tab>Events</Tab><Tab>Places</Tab><Tab>Pages</Tab>
-        </TabList>
-        <TabPanels>
-          <TabPanel px={0}><Registrations /></TabPanel>
-          <TabPanel px={0}>
-            <CreateForm endpoint="admin/announcements" label="Publish" invalidate={['announcements']} fields={[
-              { key: 'title', label: 'Title', required: true }, { key: 'body', label: 'Message', type: 'textarea', required: true }, { key: 'is_public', label: 'Visible to guests', type: 'checkbox' },
-            ]} />
-          </TabPanel>
-          <TabPanel px={0}>
-            <Stack spacing={6}>
-              <CreateForm endpoint="admin/people" label="Add person" invalidate={['people', 'tree']} fields={[
-                { key: 'given_name', label: 'Given name', required: true }, { key: 'family_name', label: 'Family name' }, { key: 'clan_name', label: 'Clan name (isiduko)' },
-                { key: 'gender', label: 'Gender', type: 'select', options: ['male', 'female', 'other'] },
-                { key: 'birth_date', label: 'Birth date', type: 'date' }, { key: 'death_date', label: 'Death date', type: 'date' },
-                { key: 'is_living', label: 'Is living', type: 'checkbox' }, { key: 'birth_place', label: 'Birth place' }, { key: 'bio', label: 'Biography', type: 'textarea' },
-              ]} />
-              <RelationshipForm />
-            </Stack>
-          </TabPanel>
-          <TabPanel px={0}>
-            <CreateForm endpoint="admin/stories" label="Add story" invalidate={['stories']} fields={[
-              { key: 'title', label: 'Title', required: true }, { key: 'narrator', label: 'Narrator' }, { key: 'body', label: 'Story', type: 'textarea', required: true },
-            ]} />
-          </TabPanel>
-          <TabPanel px={0}>
-            <CreateForm endpoint="admin/events" label="Add event" invalidate={['events']} fields={[
-              { key: 'title', label: 'Title', required: true }, { key: 'kind', label: 'Kind (e.g. umembeso, imbeleko, reunion)' }, { key: 'event_date', label: 'Date', type: 'date' },
-              { key: 'location', label: 'Location' }, { key: 'details', label: 'Details', type: 'textarea' },
-            ]} />
-          </TabPanel>
-          <TabPanel px={0}>
-            <CreateForm endpoint="admin/places" label="Add place" invalidate={['places']} fields={[
-              { key: 'name', label: 'Name', required: true }, { key: 'kind', label: 'Kind', type: 'select', options: ['homestead', 'grave', 'origin', 'other'] },
-              { key: 'description', label: 'Description', type: 'textarea' }, { key: 'latitude', label: 'Latitude' }, { key: 'longitude', label: 'Longitude' },
-            ]} />
-          </TabPanel>
-          <TabPanel px={0}><PageEditor /></TabPanel>
-        </TabPanels>
+        <TabList overflowX="auto">{visible.map((t) => <Tab key={t.label}>{t.label}</Tab>)}</TabList>
+        <TabPanels>{visible.map((t) => <TabPanel key={t.label} px={0}>{t.el}</TabPanel>)}</TabPanels>
       </Tabs>
     </>
   )

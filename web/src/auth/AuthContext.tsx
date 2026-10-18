@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { api, setCsrfToken } from '../lib/api'
 
-export interface User { id: number; email: string; fullName: string; role: 'member' | 'admin' }
+export interface User { id: number; email: string; fullName: string; role: 'member' | 'admin'; permissions: string[] }
 
 interface AuthState {
   user: User | null
   loading: boolean
+  can: (perm: string) => boolean
+  canAny: (...perms: string[]) => boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
 }
@@ -42,7 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCsrfToken('')
   }
 
-  return <Ctx.Provider value={{ user, loading, login, logout }}>{children}</Ctx.Provider>
+  const can = (perm: string) => !!user && user.permissions.includes(perm)
+  const canAny = (...perms: string[]) => perms.some(can)
+
+  return <Ctx.Provider value={{ user, loading, can, canAny, login, logout }}>{children}</Ctx.Provider>
 }
 
 export function useAuth() {
