@@ -1,0 +1,72 @@
+import { Badge, Box, Heading, Text, VStack } from '@chakra-ui/react'
+import { useQuery } from '@tanstack/react-query'
+import { Notice, PageTitle, QueryState, fmtDate } from '../components/ui'
+import { api, type ClanEvent, type Place, type Story } from '../lib/api'
+
+export function StoriesPage() {
+  const { data, isLoading, error } = useQuery({ queryKey: ['stories'], queryFn: () => api<Story[]>('stories') })
+  return (
+    <>
+      <PageTitle sub="Oral history and family memories">Stories</PageTitle>
+      <QueryState loading={isLoading} error={error} />
+      {data?.length === 0 && <Text>No stories yet.</Text>}
+      <VStack align="stretch" spacing={4}>
+        {data?.map((s) => (
+          <Box key={s.id} bg="white" p={5} rounded="lg" shadow="sm">
+            <Heading size="md">{s.title}</Heading>
+            {s.narrator && <Text fontSize="sm" color="gray.600">Told by {s.narrator}</Text>}
+            <Text mt={2} whiteSpace="pre-wrap">{s.body}</Text>
+          </Box>
+        ))}
+      </VStack>
+    </>
+  )
+}
+
+export function EventsPage() {
+  const { data, isLoading, error } = useQuery({ queryKey: ['events'], queryFn: () => api<ClanEvent[]>('events') })
+  return (
+    <>
+      <PageTitle sub="Gatherings, ceremonies, reunions and milestones">Events</PageTitle>
+      <QueryState loading={isLoading} error={error} />
+      {data?.length === 0 && <Text>No events yet.</Text>}
+      <VStack align="stretch" spacing={4}>
+        {data?.map((e) => (
+          <Box key={e.id} bg="white" p={5} rounded="lg" shadow="sm">
+            <Heading size="md">{e.title} {e.kind && <Badge ml={2} colorScheme="orange">{e.kind}</Badge>}</Heading>
+            <Text fontSize="sm" color="gray.600">{fmtDate(e.event_date)} {e.location && `· ${e.location}`}</Text>
+            {e.details && <Text mt={2} whiteSpace="pre-wrap">{e.details}</Text>}
+          </Box>
+        ))}
+      </VStack>
+    </>
+  )
+}
+
+export function PlacesPage() {
+  const { data, isLoading, error } = useQuery({ queryKey: ['places'], queryFn: () => api<Place[]>('places') })
+  return (
+    <>
+      <PageTitle sub="Ancestral homesteads, graves and places of origin">Places</PageTitle>
+      <QueryState loading={isLoading} error={error} />
+      {data?.length === 0 && <Text>No places recorded yet.</Text>}
+      <VStack align="stretch" spacing={4}>
+        {data?.map((p) => (
+          <Box key={p.id} bg="white" p={5} rounded="lg" shadow="sm">
+            <Heading size="md">{p.name} <Badge ml={2}>{p.kind}</Badge></Heading>
+            {p.description && <Text mt={2} whiteSpace="pre-wrap">{p.description}</Text>}
+          </Box>
+        ))}
+      </VStack>
+    </>
+  )
+}
+
+export function ComingSoon({ title, sub }: { title: string; sub: string }) {
+  return (
+    <>
+      <PageTitle sub={sub}>{title}</PageTitle>
+      <Notice>Coming soon. File uploads are intentionally left out of the lean version; see docs/DESIGN_DECISIONS.md.</Notice>
+    </>
+  )
+}
